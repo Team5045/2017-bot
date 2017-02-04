@@ -20,6 +20,3 @@ class DriveTrain(Subsystem):
     def __init__(self, robot):
         super().__init__()
         self.robot = robot
-		
-		#Configure Motors - Expected Motor Configuration: Front Left, Front Right, Slaved Middle Motors, Slave Back Motors
-		#Configure Encoder

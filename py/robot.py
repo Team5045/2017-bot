@@ -16,5 +16,6 @@ from bot import Robot
 class Bot(Robot):
     pass
 
+
 if __name__ == '__main__':
     wpilib.run(Bot)

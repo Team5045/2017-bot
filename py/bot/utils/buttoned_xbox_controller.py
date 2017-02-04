@@ -12,8 +12,6 @@ from .xbox_controller import XboxController
 
 class ButtonedXboxController(XboxController):
     def getRawButton(self, button):
-        # print('get raw button', button, self)
-        # print(self.getLeftTrigger(), self.getRightTrigger(), self.getLeftBumper(), self.getRightBumper())
         if button == 'left_trigger':
             return self.getLeftTrigger()
         elif button == 'right_trigger':
