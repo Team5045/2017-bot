@@ -20,7 +20,6 @@ class Robot(wpilib.IterativeRobot):
         """
 
         self.drive_train = drive_train.DriveTrain(self)
-
         self.oi = operator_interface.OperatorInterface(self)
 
         # Set up autonomous command selector

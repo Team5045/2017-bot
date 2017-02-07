@@ -10,7 +10,7 @@ from bot import config
 from bot.utils.buttoned_xbox_controller import ButtonedXboxController
 
 
-class OperatorInterface(object):
+class OperatorInterface():
 
     def __init__(self, robot):
         self.robot = robot
