@@ -20,5 +20,15 @@ class ButtonedXboxController(XboxController):
             return self.getLeftBumper()
         elif button == 'right_bumper':
             return self.getRightBumper()
+        elif button == 'pov_top':
+            return self.getPOV() == 0
+        elif button == 'pov_right':
+            return self.getPOV() == 90
+        elif button == 'pov_bottom':
+            return self.getPOV() == 180
+        elif button == 'pov_left':
+            return self.getPOV() == 270
+        elif button == 'start':
+            return self.getStart()
         else:
             return self.ds.getStickButton(self.port, button)

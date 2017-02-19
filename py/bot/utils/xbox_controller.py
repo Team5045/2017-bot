@@ -1,4 +1,3 @@
-
 import hal
 import wpilib
 
@@ -30,7 +29,7 @@ class XboxController:
         self.leftRumble = 0
         self.rightRumble = 0
 
-        hal.HALReport(hal.HALUsageReporting.kResourceType_Joystick, port)
+        hal.report(hal.UsageReporting.kResourceType_Joystick, port)
 
     def getLeftX(self):
         """Get the left stick X axis

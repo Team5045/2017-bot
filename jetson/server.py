@@ -4,14 +4,15 @@ import base64
 import logging
 
 from flask import Flask, render_template
-from flask.ext.socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit
 
 from gevent import monkey, Greenlet
 
 
 import config
 from modules.driver_vision import DriverVision
-from modules.targeting import Targeting
+from modules.shooter_targeting import ShooterTargeting
+from modules.gear_targeting import GearTargeting
 from modules.network_tables import NetworkTables
 from modules import cv2_polyfill
 
@@ -26,16 +27,17 @@ stream_handler.setLevel(logging.INFO)
 app.logger.addHandler(stream_handler)
 logging.getLogger('nt').addHandler(stream_handler)
 
-jetson_targeting = Targeting()
-jetson_driver_vision = DriverVision(targeting=jetson_targeting)
+jetson_driver_vision = DriverVision()
+targeting_modules = {
+    'shooter': ShooterTargeting(),
+    'gear': GearTargeting()
+}
 
 jetson_network_tables = NetworkTables()
 jetson_network_tables.set_socketio(socketio)
 jetson_network_tables.set_choosers([
     config.NT_AUTONOMOUS_COMMAND_SELECTOR,
-    config.NT_DRIVER_DIRECTION_SELECTOR,
-    config.NT_AUTONOMOUS_POSITION_SELECTOR,
-    config.NT_MACRO_SELECTOR
+    config.NT_DRIVER_DIRECTION_SELECTOR
 ])
 
 
@@ -48,8 +50,8 @@ jetson_network_tables.set_choosers([
 def home():
     """Request the main dashboard screen for driver station"""
     return render_template('index.html',
-                           width=config.DRIVER_CAMERA_WIDTH,
-                           height=config.DRIVER_CAMERA_HEIGHT
+                           width=config.TARGETING_CAMERA_WIDTH,
+                           height=config.TARGETING_CAMERA_HEIGHT
                            )
 
 
@@ -71,22 +73,29 @@ def edit_network_tables(data):
 # --
 
 
-def request_targeting():
-    match = jetson_targeting.find_target()
+def request_targeting(selected_camera):
+    match = targeting_modules[selected_camera].find_target()
+
     if match:
-        jetson_network_tables.put_value('target_found', True, 'boolean')
-        jetson_network_tables.put_value('target_details', match, 'object')
+        jetson_network_tables.put_value(selected_camera + '_target_found',
+                                        True, 'boolean')
+        jetson_network_tables.put_value(selected_camera + '_target_details',
+                                        match, 'object')
     else:
-        jetson_network_tables.put_value('target_found', False, 'boolean')
+        jetson_network_tables.put_value(selected_camera + '_target_found',
+                                        False, 'boolean')
 
     continually_request_targeting()
 
 
 def continually_request_targeting():
-    if jetson_network_tables.get_value('targeting_enabled') or \
-        jetson_network_tables.get_value(config.NT_DRIVER_DIRECTION_SELECTOR +
-                                        '/selected') == 'shooting':
-        g = Greenlet(request_targeting)
+    selected_camera = jetson_network_tables.get_value(
+        config.NT_DRIVER_DIRECTION_SELECTOR + '/selected')
+    if not selected_camera:
+        selected_camera = 'gear'
+
+    if selected_camera:
+        g = Greenlet(request_targeting, selected_camera)
         g.start_later(config.TARGETING_INTERVAL)
     else:
         g = Greenlet(continually_request_targeting)
@@ -96,9 +105,13 @@ def continually_request_targeting():
 def request_driver_vision():
     selected_camera = jetson_network_tables.get_value(
         config.NT_DRIVER_DIRECTION_SELECTOR + '/selected')
+    if not selected_camera:
+        selected_camera = 'gear'
 
-    jpeg = jetson_driver_vision.get_current_frame(camera=selected_camera,
-                                                  make_jpeg=True)
+    module = targeting_modules[selected_camera]
+
+    jpeg = jetson_driver_vision.get_frame_from_targeting(module=module,
+                                                         make_jpeg=True)
     socketio.emit('driver_vision', {
         'raw': 'data:image/jpeg;base64,' + base64.b64encode(jpeg),
         'timestamp': time.time()

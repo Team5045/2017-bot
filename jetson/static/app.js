@@ -1,5 +1,5 @@
 ( function ( io, $ ) {
-    var socket = io.connect(undefined, {
+    var socket = io.connect('http://' + document.domain + ':' + location.port, {
         reconnectionDelayMax: 1000
     });
 
