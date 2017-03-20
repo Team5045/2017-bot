@@ -85,17 +85,6 @@ class TargetingPipeline():
         return result, frame
 
 
-def setup_capture_for_settings(settings):
-    print 'setup cap', settings
-    cap = cv2.VideoCapture(settings['camera_port'])
-    cap.set(cv2.cv.CV_CAP_PROP_FPS, settings['fps'])
-    cap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, settings['width'])
-    cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, settings['height'])
-    cap.set(cv2.cv.CV_CAP_PROP_BRIGHTNESS, settings['brightness'])
-    cap.set(cv2.cv.CV_CAP_PROP_EXPOSURE, settings['exposure'])
-    return cap
-
-
 def sortpts_clockwise(coords):
     by_x = sorted(coords, key=lambda c: c[0])
 
@@ -151,10 +140,9 @@ def make_target_data(c, rects, settings):
 
     sorted_c = sortpts_clockwise(c)
 
-    coords = map(lambda (x, y):
-                 (round(((x - x_center) / (full_width)) + 0.5, 3),
-                  round((y - y_center) / (full_height) + 0.5, 3)),
-                 sorted_c)
+    coords = [(round(((x - x_center) / (full_width)) + 0.5, 3),
+               round((y - y_center) / (full_height) + 0.5, 3))
+              for (x, y) in sorted_c]
 
     # print(c, sorted_c, coords)
 

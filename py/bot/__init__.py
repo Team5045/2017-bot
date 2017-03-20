@@ -8,7 +8,7 @@ The main robot class. Yay!
 import wpilib
 from wpilib.command import Scheduler
 
-from bot import operator_interface
+from bot import operator_interface, config
 from bot.subsystems import drive_train, shooter, turret, climber, \
     floor_intake, gear_manipulator, compressor, jetson, navx
 from bot.subsystems.choosers import driver_direction_chooser, auto_mode_chooser
@@ -48,7 +48,13 @@ class Robot(wpilib.IterativeRobot):
         # Set up autonomous command selector
         self.autonomous_command = None
 
+        # Launch on-board vision
+        if config.FALLBACK_ONBOARD_VISION:
+            wpilib.CameraServer.launch()
+            # wpilib.CameraServer.launch('bot/vision/vision.py:main')
+
     def autonomousInit(self):
+        print('autonomousInit')
         self.autonomous_command = self.auto_mode_chooser.get_selected()
         self.autonomous_command.start()
 

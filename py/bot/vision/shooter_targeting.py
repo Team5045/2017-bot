@@ -1,13 +1,11 @@
-from .targeting_helpers import TargetingPipeline, setup_capture_for_settings
-
 import config
+from targeting_helpers import TargetingPipeline
 
 
 class ShooterTargeting(object):
 
     def __init__(self):
         self.settings = {
-            'camera_port': config.SHOOTER_TARGETING_CAMERA_PORT,
             'lower_hsv_bound': config.TARGETING_LOWER_HSV_BOUND,
             'upper_hsv_bound': config.TARGETING_UPPER_HSV_BOUND,
             'width': config.TARGETING_CAMERA_WIDTH,
@@ -20,12 +18,8 @@ class ShooterTargeting(object):
             'distance_dimension': 'y'
         }
 
-        self.last_frame = None  # For other modules to access
-        self.cap = setup_capture_for_settings(self.settings)
         self.pipeline = TargetingPipeline(settings=self.settings)
 
-    def find_target(self):
-        ret, frame = self.cap.read()
+    def process(self, frame):
         result, processed_frame = self.pipeline.process(frame)
-        self.last_frame = processed_frame
-        return result
+        return result, processed_frame

@@ -14,14 +14,17 @@ class DumbFeed(Command):
         self.outtake = outtake
         #self.requires(self.robot.shooter)
 
+    def initialize(self):
+        print('init dumb feed, outtake:', self.outtake)
+
     def execute(self):
-        print('exec', self.outtake)
         self.robot.shooter.dumb_run_feeder(self.outtake)
 
     def isFinished(self):
         return False  # Runs until interrupted
 
     def end(self):
+        print('end dumb feed')
         self.robot.shooter.dumb_stop_feeder()
 
     def interrupted(self):

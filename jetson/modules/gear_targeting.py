@@ -26,6 +26,6 @@ class GearTargeting(object):
 
     def find_target(self):
         ret, frame = self.cap.read()
-        result = self.pipeline.process(frame)
-        self.last_frame = frame
+        result, processed_frame = self.pipeline.process(frame)
+        self.last_frame = processed_frame
         return result

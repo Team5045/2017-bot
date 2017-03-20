@@ -12,9 +12,16 @@ class Pipeline:
         """initializes all values to presets or None if need to be set
         """
 
-        self.__hsl_threshold_hue = [77.6978417266187, 92.45733788395904]
-        self.__hsl_threshold_saturation = [171.98741007194243, 255.0]
-        self.__hsl_threshold_luminance = [43.57014388489208, 255.0]
+        # self.__hsl_threshold_hue = [77.6978417266187, 92.45733788395904]
+        # self.__hsl_threshold_saturation = [171.98741007194243, 255.0]
+        # self.__hsl_threshold_luminance = [43.57014388489208, 255.0]
+        # self.__hsl_threshold_hue = [0, 0]
+        # self.__hsl_threshold_saturation = [0, 0]
+        # self.__hsl_threshold_luminance = [0, 255]
+        self.__hsl_threshold_hue = [0, 10]
+        self.__hsl_threshold_saturation = [200, 255]
+        self.__hsl_threshold_luminance = [255/2, 255]
+
 
         self.hsl_threshold_output = None
 

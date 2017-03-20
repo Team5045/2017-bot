@@ -22,4 +22,6 @@ class AutoModeChooser(Subsystem):
                                     self.chooser, 'data')
 
     def get_selected(self):
-        return self.chooser.getSelected()
+        selected = self.chooser.getSelected()
+        print(selected.__class__.nickname)
+        return selected

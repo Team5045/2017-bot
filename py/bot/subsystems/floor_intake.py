@@ -11,7 +11,7 @@ from bot import config
 
 class FloorIntake(Subsystem):
 
-    SPEED = 0.25
+    SPEED = 0.4
 
     def __init__(self, robot):
         super().__init__()
@@ -22,8 +22,8 @@ class FloorIntake(Subsystem):
         self.motor.reverseOutput(True)
         self.motor.setInverted(True)
 
-    def intake(self):
-        self.motor.set(self.SPEED)
+    def intake(self, outtake):
+        self.motor.set(self.SPEED * (-1 if outtake else 1))
 
     def stop(self):
         self.motor.set(0)

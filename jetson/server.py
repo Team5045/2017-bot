@@ -1,3 +1,4 @@
+
 import sys
 import time
 import base64
@@ -36,6 +37,7 @@ targeting_modules = {
 jetson_network_tables = NetworkTables()
 jetson_network_tables.set_socketio(socketio)
 jetson_network_tables.set_choosers([
+    config.NT_STARTING_POSITION_SELECTOR,
     config.NT_AUTONOMOUS_COMMAND_SELECTOR,
     config.NT_DRIVER_DIRECTION_SELECTOR
 ])
@@ -89,10 +91,11 @@ def request_targeting(selected_camera):
 
 
 def continually_request_targeting():
-    selected_camera = jetson_network_tables.get_value(
-        config.NT_DRIVER_DIRECTION_SELECTOR + '/selected')
-    if not selected_camera:
-        selected_camera = 'gear'
+    # selected_camera = jetson_network_tables.get_value(
+    #     config.NT_DRIVER_DIRECTION_SELECTOR + '/selected')
+    # if not selected_camera:
+    #     selected_camera = 'gear'
+    selected_camera = 'shooter'
 
     if selected_camera:
         g = Greenlet(request_targeting, selected_camera)
@@ -103,10 +106,11 @@ def continually_request_targeting():
 
 
 def request_driver_vision():
-    selected_camera = jetson_network_tables.get_value(
-        config.NT_DRIVER_DIRECTION_SELECTOR + '/selected')
-    if not selected_camera:
-        selected_camera = 'gear'
+    # selected_camera = jetson_network_tables.get_value(
+    #     config.NT_DRIVER_DIRECTION_SELECTOR + '/selected')
+    # if not selected_camera:
+    #     selected_camera = 'gear'
+    selected_camera = 'shooter'
 
     module = targeting_modules[selected_camera]
 

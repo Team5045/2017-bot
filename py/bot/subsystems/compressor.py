@@ -18,7 +18,7 @@ class Compressor(Subsystem):
         self.compressor = wpilib.Compressor()
 
         # Enable compressor by default
-        self.robot.jetson.put_value(config.COMPRESSOR_DASHBOARD_KEY, False,
+        self.robot.jetson.put_value(config.COMPRESSOR_DASHBOARD_KEY, True,
                                     valueType='boolean')
 
     @property

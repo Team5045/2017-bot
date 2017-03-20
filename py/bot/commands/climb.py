@@ -14,10 +14,10 @@ class Climb(Command):
         self.requires(self.robot.climber)
 
     def initialize(self):
-        self.robot.climber.climb()
+        print('init climb')
 
     def execute(self):
-        pass
+        self.robot.climber.climb()
 
     def isFinished(self):
         return False  # Runs until interrupted

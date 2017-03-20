@@ -5,7 +5,7 @@ shoot.py
 
 from wpilib.command import Command
 
-SPEED = 0.1
+SPEED = 0.15
 
 
 class RotateTurret(Command):
@@ -20,10 +20,10 @@ class RotateTurret(Command):
         self.requires(self.robot.turret)
 
     def initialize(self):
-        self.robot.turret.set_speed(self.speed)
+        pass
 
     def execute(self):
-        pass
+        self.robot.turret.set_speed(self.speed)
 
     def isFinished(self):
         return False  # Runs until interrupted

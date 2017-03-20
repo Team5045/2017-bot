@@ -19,6 +19,8 @@ class Shoot(Command):
     def execute(self):
         if self.robot.shooter.is_ready_to_shoot:
             self.robot.shooter.shoot()
+        else:
+            self.robot.shooter.stop()
 
     def isFinished(self):
         return False  # Runs until interrupted

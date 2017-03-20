@@ -1,6 +1,7 @@
-( function ( io, $ ) {
+( function ( io, $, CanvasJS ) {
     var socket = io.connect('http://' + document.domain + ':' + location.port, {
-        reconnectionDelayMax: 1000
+        reconnectionDelayMax: 1000,
+        transports: ['websocket', 'polling']
     });
 
     // VIDEO STREAM
@@ -192,9 +193,124 @@
                             })
                     )
                     .appendTo($editables);
+
+            } else if (type === 'number') {
+                $('<div>', { id: 'editables_' + name })
+                    .append($('<b>').text(name))
+                    .append(': ')
+                    .append(
+                        $('<input type="text" class="editable-textfield">')
+                            .val(value),
+                        $('<input type="button" class="editable-update">')
+                            .val('Update')
+                            .click(function () {
+                                var $field = $(this).prev(),
+                                    newValue = $field.val();
+
+                                if (+newValue === value) {
+                                    return;
+                                }
+
+                                socket.emit('edit_network_tables', {
+                                    key: key,
+                                    value: newValue,
+                                    type: 'number'
+                                });
+                                $field.prop('disabled', true);
+                            })
+                    )
+                    .appendTo($editables);
             }
         });
     }
+
+    var graphData = {};
+    function initializeRobotGraphs() {
+        $('#robotGraphsInner > .graph').each(function () {
+            var $container = $(this),
+                title = $container.data('graph-title'),
+                varString = $container.data('graph-vars'),
+                vars = varString.split(','),
+                $inner = $('<canvas width="400" height="250">').appendTo($container);
+
+            $('<div class="graph-title">').text(title)
+                .append($('<span>').text('Reset').click(function () {
+                    graphData[varString].datasets.forEach(function (dataset) {
+                        dataset.data = [];
+                    });
+                }))
+                .prependTo($container);
+
+            var datasets = vars.map(function (varName) {
+                return {
+                    label: varName,
+                    data: []
+                };
+            });
+
+            var chart = new CanvasJS.Chart($inner.get(0), {
+                type: 'line',
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'linear',
+                            position: 'bottom'
+                        }]
+                    },
+                    responsive: true,
+                    animation: {
+                        duration: 0
+                    },
+                    tooltips: {
+                        enabled: false
+                    },
+                    elements: {
+                        line: {
+                            borderWidth: 0.1
+                        },
+                        point: {
+                            radius: 0.5
+                        }
+                    }
+                },
+                data: {
+                    datasets: datasets
+                }
+            });
+
+            graphData[varString] = {
+                vars: vars,
+                datasets: datasets,
+                chart: chart
+            };
+        });
+    }
+    initializeRobotGraphs();
+
+    var startTs = Date.now();
+    function updateRobotGraphs() {
+        var deltaTs = Date.now() - startTs;
+        Object.keys(graphData).forEach(function (key) {
+            var keyData = graphData[key];
+            keyData.datasets.forEach(function (dataset) {
+                dataset.data.push({
+                    x: deltaTs,
+                    y: robotStats[dataset.label] || 0
+                });
+            });
+            keyData.chart.update();
+        });
+    }
+
+    var updateRobotGraphsInterval;
+    $('#robotGraphsToggle').click(function () {
+        if (updateRobotGraphsInterval) {
+            clearInterval(updateRobotGraphsInterval);
+            updateRobotGraphsInterval = undefined;
+        } else {
+            updateRobotGraphsInterval = setInterval(updateRobotGraphs, 100);
+        }
+    });
 
     // Request initial updates
     socket.emit('request_driver_vision');
@@ -220,4 +336,4 @@
         return false;
     });
 
-}( io, jQuery ) );
+}( io, jQuery, Chart ) );

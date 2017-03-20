@@ -14,8 +14,8 @@ class Climber(Subsystem):
 
         # Configure motors
         self.motor = CANTalon(config.CLIMBER_MOTOR)
-        self.motor.reverseOutput(True)
-        self.motor.setInverted(True)
+        self.motor.reverseOutput(False)
+        self.motor.setInverted(False)
 
     def climb(self):
         self.motor.set(self.SPEED)

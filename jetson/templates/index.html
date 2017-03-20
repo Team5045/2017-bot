@@ -33,6 +33,12 @@
             </div>
         </div>
       </div>
+      <div class="row">
+        <h5>Graphs <span id="robotGraphsToggle">Toggle</span></h5>
+        <div id="robotGraphsInner">
+          <div class="graph one-third column" data-graph-vars="shooter_setpoint,shooter_speed" data-graph-title="Shooter RPM PID"></div>
+        </div>
+      </div>
     </div>
     <div class="footer">
       Powered by <a href="https://team5045.com">Team 5045</a>. Yeeeeeeee.
@@ -43,6 +49,7 @@
     <script src="{{ url_for('static', filename='jquery-2.1.4.min.js') }}"></script>
     <script src="{{ url_for('static', filename='lodash.js') }}"></script>
     <script src="{{ url_for('static', filename='socketio.js') }}"></script>
+    <script src="{{ url_for('static', filename='chart.js') }}"></script>
     <script>
       CAMERA_WIDTH = {{ width }};
       CAMERA_HEIGHT = {{ height }};

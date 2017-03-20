@@ -11,42 +11,54 @@ from bot import config
 
 class Shooter(Subsystem):
 
-    FLYWHEEL_SPEED = 8000  # RPM
     TOLERANCE = 100  # RPM
-    (P, I, D, F) = (0.01, 0, 0, 0)
+    (P, I, D, F) = (0, 0, 0, 0.311)
 
-    FEEDER_SPEED = 0.5
+    FEEDER_SPEED = 1
 
     def __init__(self, robot):
         super().__init__()
         self.robot = robot
 
-        self.motor = CANTalon(config.SHOOTER_MOTOR)
-        self.motor.reverseOutput(True)
-        self.motor.setInverted(True)
+        self.flywheel_motor = CANTalon(config.SHOOTER_MOTOR)
+        self.flywheel_motor.reverseOutput(True)
+        self.flywheel_motor.setInverted(True)
+        # self.flywheel_motor.setControlMode(CANTalon.ControlMode.PercentVbus)
+        self.flywheel_motor.enableLimitSwitch(False, False)
+        self.flywheel_motor.clearStickyFaults()
+        self.flywheel_motor.configPeakOutputVoltage(12, -12)
+        self.flywheel_motor.configNominalOutputVoltage(0, -0)
+        self.flywheel_motor.reverseSensor(True)
 
-        self.motor.setPID(self.P, self.I, self.D, self.F)
+        self.flywheel_motor.setFeedbackDevice(
+            CANTalon.FeedbackDevice.CtreMagEncoder_Relative)
+        self.flywheel_motor.setPID(self.P, self.I, self.D, self.F)
+        self.flywheel_motor.enableControl()
 
         self.feeder_motor = CANTalon(config.SHOOTER_FEEDER_MOTOR)
 
-    def prepare_to_shoot(self):
-        self.motor.set(self.FLYWHEEL_SPEED)
+    def set_flywheel_speed(self, speed):
+        self.flywheel_motor.changeControlMode(CANTalon.ControlMode.Speed)
+        self.flywheel_motor.set(speed)
+        # self.flywheel_motor.set(0.8)
+        # print('set speed', speed)
 
-    def shoot(self):
-        self.motor.changeControlMode(CANTalon.ControlMode.Speed)
-        self.feeder_motor.set(self.FEEDER_SPEED)
+    def get_flywheel_speed(self):
+        # print('get speed', self.flywheel_motor.getSpeed())
+        return self.flywheel_motor.getSpeed()
 
-    @property
-    def is_ready_to_shoot(self):
-        return abs(self.get_speed() - self.FLYWHEEL_SPEED) \
-            < self.TOLERANCE
+    def get_flywheel_setpoint(self):
+        return self.flywheel_motor.getSetpoint()
 
-    def stop(self):
-        self.motor.set(0)
-        self.feeder_motor.set(0)
+    def get_flywheel_error(self):
+        return self.flywheel_motor.getClosedLoopError()
 
-    def get_speed(self):
-        return self.motor.getSpeed()
+    def is_flywheel_within_tolerance(self):
+        return False
+        return abs(self.flywheel_motor.getClosedLoopError()) < self.TOLERANCE
+
+    def stop_flywheel(self):
+        self.flywheel_motor.set(0)
 
     def dumb_run_feeder(self, outtake=False):
         self.feeder_motor.changeControlMode(CANTalon.ControlMode.PercentVbus)
@@ -55,9 +67,14 @@ class Shooter(Subsystem):
     def dumb_stop_feeder(self):
         self.feeder_motor.set(0)
 
-    def dumb_run_flywheel(self):
-        self.motor.changeControlMode(CANTalon.ControlMode.PercentVbus)
-        self.motor.set(0.9)
+    def dumb_run_flywheel(self, speed=0.8):
+        self.flywheel_motor.changeControlMode(CANTalon.ControlMode.PercentVbus)
+        self.flywheel_motor.set(speed)
 
     def dumb_stop_flywheel(self):
-        self.motor.set(0)
+        self.flywheel_motor.changeControlMode(CANTalon.ControlMode.PercentVbus)
+        self.flywheel_motor.set(0)
+
+    def stop(self):
+        self.flywheel_motor.set(0)
+        self.feeder_motor.set(0)

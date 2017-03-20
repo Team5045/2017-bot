@@ -1,7 +1,7 @@
 from wpilib.command import Command
 
 
-class DepositGear(Command):
+class LowerGearManipulatorPlate(Command):
 
     def __init__(self, robot):
         super().__init__()
@@ -10,8 +10,8 @@ class DepositGear(Command):
         self.is_finished = False
 
     def initialize(self):
-        print('depositgear')
-        self.robot.gear_manipulator.open_cup()
+        print('lowegearmanip')
+        self.robot.gear_manipulator.lower_plate()
         self.is_finished = True
 
     def isFinished(self):

@@ -95,7 +95,7 @@ h5 {
 }
 
 #robotStatsInner {
-    /* max-width: 300px; */
+    min-height: 350px;
     margin: 0 auto;
     text-align: left;
 }
@@ -111,6 +111,26 @@ h5 {
 
 #robotEditablesInner input:disabled, select:disabled {
     color: #ccc;
+}
+
+#robotEditablesInner .editable-textfield {
+    max-width: 75px;
+    margin-right: 0.5em;
+}
+
+#robotEditablesInner .editable-update {
+    background-color: #fff;
+}
+
+#robotGraphsInner .graph-title span {
+    margin-left: 5px;
+    font-size: 0.8em;
+    cursor: pointer;
+}
+
+#robotGraphsToggle {
+    font-size: 0.7em;
+    cursor: pointer;
 }
 
 .wrapper {
