@@ -15,8 +15,10 @@ class PublishStatsToJetson(Command):
         navx = self.robot.navx.get_formatted_status()
         self.robot.jetson.put_value('navx_data', navx, valueType='string')
 
-        encoder = self.robot.drive_train.get_encoder_distance()
-        self.robot.jetson.put_value('encoder_distance', encoder,
+        enc_data = self.robot.drive_train.get_encoder_distance_data()
+        self.robot.jetson.put_value('left_encoder', enc_data[0],
+                                    valueType='number')
+        self.robot.jetson.put_value('right_encoder', enc_data[1],
                                     valueType='number')
 
         shooter_setpoint = self.robot.shooter.get_flywheel_setpoint()

@@ -45,15 +45,6 @@ class OperatorInterface():
         JoystickButton(self.drive_controller, config.OI_CLIMB) \
             .toggleWhenPressed(climb.Climb(self.robot))
 
-        # JoystickButton(self.drive_controller, config.OI_CLIMB) \
-        #     .toggleWhenPressed(dumb_shoot.DumbShoot(self.robot))
-
-        # JoystickButton(self.drive_controller, config.OI_DRIVER_INTAKE) \
-        #     .whileHeld(intake.Intake(self.robot))
-
-        # JoystickButton(self.drive_controller, config.OI_DRIVER_OUTTAKE) \
-        #     .whileHeld(intake.Intake(self.robot, outtake=True))
-
         JoystickButton(self.drive_controller, 'pov_bottom').whenReleased(
             lower_gear_manipulator_plate.LowerGearManipulatorPlate(self.robot))
 
@@ -62,6 +53,30 @@ class OperatorInterface():
 
         JoystickButton(self.drive_controller, 'pov_left') \
             .whenReleased(deposit_gear.DepositGear(self.robot))
+
+        JoystickButton(self.drive_controller,
+                       config.OI_TURRET_MANUAL_LEFT) \
+            .whileHeld(
+                rotate_turret.RotateTurret(
+                    self.robot,
+                    speed=rotate_turret.RotateTurret.LEFT_SPEED))
+
+        JoystickButton(self.drive_controller,
+                       config.OI_TURRET_MANUAL_RIGHT) \
+            .whileHeld(
+                rotate_turret.RotateTurret(
+                    self.robot,
+                    speed=rotate_turret.RotateTurret.RIGHT_SPEED))
+
+        JoystickButton(self.drive_controller, config.OI_SHOOT_EDITABLE) \
+            .toggleWhenPressed(
+                dumb_shoot.DumbShoot(self.robot))
+
+        JoystickButton(self.drive_controller, config.OI_DRIVER_INTAKE) \
+            .whileHeld(dumb_feed.DumbFeed(self.robot))
+
+        JoystickButton(self.drive_controller, config.OI_DRIVER_OUTTAKE) \
+            .whileHeld(dumb_feed.DumbFeed(self.robot, outtake=True))
 
         # OPERATOR CONTROLLER
 

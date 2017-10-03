@@ -5,25 +5,29 @@ shoot.py
 
 from wpilib.command import Command
 
-SPEED = 0.25
+MAX_SPEED = 0.75
+MIN_SPEED = 0.05
+DEADBAND = 0.1
 
 
-class RotateTurret(Command):
+class RotateTurretWithController(Command):
 
-    RIGHT_SPEED = SPEED
-    LEFT_SPEED = -SPEED
-
-    def __init__(self, robot, speed):
+    def __init__(self, robot):
         super().__init__()
         self.robot = robot
-        self.speed = speed
         self.requires(self.robot.turret)
 
     def initialize(self):
         pass
 
     def execute(self):
-        self.robot.turret.set_speed(self.speed)
+        speed = -self.robot.oi.get_operator_controller().getRightX()
+        if abs(speed) > DEADBAND:
+            scaled = (MAX_SPEED - MIN_SPEED) * speed + MIN_SPEED
+        else:
+            scaled = 0
+
+        self.robot.turret.set_speed(scaled)
 
     def isFinished(self):
         return False  # Runs until interrupted

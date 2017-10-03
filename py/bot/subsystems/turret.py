@@ -6,6 +6,8 @@ shooter.py
 from wpilib.command import Subsystem
 from ctre.cantalon import CANTalon
 
+from bot.commands.rotate_turret_with_controller import \
+    RotateTurretWithController
 from bot import config
 
 (P, I, D, F) = (0.01, 0, 0, 0)
@@ -42,6 +44,11 @@ class Turret(Subsystem):
     # def set_angle(self, angle):
     #     self.motor.setControlMode(CANTalon.ControlMode.Position)
     #     self.motor.setPosition(angle)
+
+    def initDefaultCommand(self):
+        """This sets the default command for the subsytem. This command
+        is run whenever no other command is running on the subsystem."""
+        self.setDefaultCommand(RotateTurretWithController(self.robot))
 
     def has_hit_limit(self):
         return False

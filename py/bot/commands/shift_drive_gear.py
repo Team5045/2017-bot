@@ -10,7 +10,6 @@ class ShiftDriveGear(Command):
         self.robot = robot
         self.gear = gear
         self.requires(self.robot.drive_train)
-        self.requires(self.robot.jetson)
 
     def initialize(self):
         # If a particular gear is passed, shift to that

@@ -13,7 +13,7 @@ from bot import config
 from bot.utils.controlled_solenoid import ControlledSolenoid
 from bot.commands.drive_with_controller import DriveWithController
 
-DEBUG = False
+DEBUG = True
 
 
 class DriveTrain(Subsystem):
@@ -31,12 +31,14 @@ class DriveTrain(Subsystem):
     ROTATE_TOLERANCE = 0.2  # Degrees
 
     DRIVE_PROFILE = 0
-    DRIVE_PIDF = (0.8, 0, 0, 0)
-    # DRIVE_PIDF = (0.3, 0, 0, 0)  # debugging but poss hardware issue
+    # DRIVE_PIDF = (0.8, 0, 0, 0)
+    DRIVE_PIDF = (0.04, 0.05, 0, 0, 1000)  # debugging but poss hardware issue
+    DRIVE_PIDF_WHEN_CLOSE = (0.8, 0, 0, 0, 0)
+    DRIVE_CLOSE_TOLERANCE = 12  # Shift when <12 in.
 
     ROTATE_PROFILE = 1
-    ROTATE_PIDF = (5, 0, 50, 0)
-    # ROTATE_PIDF = (5, 0.001, 50, 0, 50)  # debugging but poss hardware issue
+    # ROTATE_PIDF = (10, 0, 50, 0)
+    ROTATE_PIDF = (10, 0.01, 50, 0, 50)  # debugging but poss hardware issue
     ROTATE_MAX_SPEED = 0.6
 
     MAX_VOLTAGE = 12
@@ -86,12 +88,11 @@ class DriveTrain(Subsystem):
             motor.setPID(*self.ROTATE_PIDF, profile=self.ROTATE_PROFILE)
 
         if config.IS_PRACTICE_BOT:
-            self.right_motor_master.reverseSensor(False)
+            self.right_motor_master.reverseSensor(True)
             self.left_motor_master.reverseSensor(False)
-
         else:
             self.right_motor_master.reverseSensor(True)
-            self.left_motor_master.reverseSensor(True)
+            self.left_motor_master.reverseSensor(False)
 
         # Configure shifter
         self.shifter_solenoid = ControlledSolenoid(config.DRIVE_SOLENOID_A,
@@ -174,8 +175,16 @@ class DriveTrain(Subsystem):
 
     def get_encoder_distance(self):
         return config.DRIVE_ENCODER_DISTANCE_PER_REV * \
-            (self.left_motor_master.getPosition() +
-                self.right_motor_master.getPosition()) / 2
+            (self.left_motor_master.getPosition() * config.ENC_LEFT_FACTOR +
+            self.right_motor_master.getPosition() * config.ENC_RIGHT_FACTOR) / 2
+
+    def get_encoder_distance_data(self):
+        return [
+            config.DRIVE_ENCODER_DISTANCE_PER_REV *
+            self.left_motor_master.getPosition() * config.ENC_LEFT_FACTOR,
+            config.DRIVE_ENCODER_DISTANCE_PER_REV *
+            self.right_motor_master.getPosition() * config.ENC_RIGHT_FACTOR
+        ]
 
     def convert_rotations_to_inches(self, rotations):
         return rotations * config.DRIVE_ENCODER_DISTANCE_PER_REV
@@ -197,13 +206,19 @@ class DriveTrain(Subsystem):
 
         self.left_motor_master.setProfile(self.DRIVE_PROFILE)
         self.right_motor_master.setProfile(self.DRIVE_PROFILE)
+
+        pid_to_use = self.DRIVE_PIDF_WHEN_CLOSE if self.is_auto_drive_close() \
+            else self.DRIVE_PIDF
+        self.left_motor_master.setPID(*pid_to_use)
+        self.right_motor_master.setPID(*pid_to_use)
+
         self.left_motor_master.changeControlMode(
             CANTalon.ControlMode.Position)
         self.right_motor_master.changeControlMode(
             CANTalon.ControlMode.Position)
 
         self.left_motor_master.set(-setpoint)
-        self.right_motor_master.set(setpoint)
+        self.right_motor_master.set(-setpoint)
 
     def get_auto_drive_errors(self):
         def get_error(m):
@@ -212,12 +227,20 @@ class DriveTrain(Subsystem):
         errors = [get_error(m) for m in self.get_motors()]
 
         if DEBUG:
-            m = self.right_motor_master
-            print(m.deviceNumber, 'setpoint', m.getSetpoint(), 'pos', m.getPosition(), 'RPM', m.getSpeed(),
-                  'closedlooperr', m.getClosedLoopError(), 'appliedThrottle', (m.getOutputVoltage()/m.getBusVoltage())*1023)
+            for m in self.get_motors():
+                print(m.deviceNumber, 'setpoint', m.getSetpoint(), 'pos', m.getPosition(), 'RPM', m.getSpeed(),
+                      'closedlooperr', m.getClosedLoopError(), 'appliedThrottle', (m.getOutputVoltage() / m.getBusVoltage()) * 1023)
             print(errors)
 
         return errors
+
+    def is_auto_drive_close(self):
+        for err in self.get_auto_drive_errors():
+            if abs(err) < self.DRIVE_CLOSE_TOLERANCE:
+                if DEBUG:
+                    print('autodrive is close')
+                return True
+        return False
 
     def get_auto_drive_within_tolerance(self):
         errors = self.get_auto_drive_errors()
@@ -269,9 +292,9 @@ class DriveTrain(Subsystem):
         errors = [get_error(m) for m in self.get_motors()]
 
         if DEBUG:
-            m = self.right_motor_master
-            print(m.deviceNumber, 'setpoint', m.getSetpoint(), 'pos', m.getPosition(), 'RPM', m.getSpeed(),
-                  'closedlooperr', m.getClosedLoopError(), 'appliedThrottle', (m.getOutputVoltage()/m.getBusVoltage())*1023)
+            for m in self.get_motors():
+                print(m.deviceNumber, 'setpoint', m.getSetpoint(), 'pos', m.getPosition(), 'RPM', m.getSpeed(),
+                      'closedlooperr', m.getClosedLoopError(), 'appliedThrottle', (m.getOutputVoltage() / m.getBusVoltage()) * 1023)
             print(errors)
 
         return errors

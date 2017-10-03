@@ -24,17 +24,21 @@ class NavX(Subsystem):
     def __init__(self, robot):
         super().__init__()
         self.robot = robot
-        if config.NAVX_ENABLED:
+        if config.NAVX_ENABLED == 'i2c':
             self.navx = AHRS.create_i2c(port=1, update_rate_hz=40)
+        elif config.NAVX_ENABLED:
+            self.navx = AHRS.create_spi(update_rate_hz=40)
         else:
             self.navx = StubNavx()
 
     def reset(self):
         self.navx.zeroYaw()
+        self.navx.zeroYaw()
 
     def get_formatted_status(self):
-        return 'pitch: {}, yaw: {}, roll: {}'.format(
-            self.get_pitch(), self.get_yaw(), self.get_roll())
+        return 'pitch: {}, yaw: {}, roll: {} (CONN: {})'.format(
+            self.get_pitch(), self.get_yaw(), self.get_roll(),
+            self.is_connected())
 
     def get_pitch(self):
         # Reversed w/ roll due to unusual mounting
@@ -45,4 +49,7 @@ class NavX(Subsystem):
         return self.navx.getPitch()
 
     def get_yaw(self):
-        return self.navx.getYaw()
+        return -self.navx.getYaw()
+
+    def is_connected(self):
+        return self.navx.isConnected()

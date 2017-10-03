@@ -18,8 +18,6 @@ class AutoRotate(PIDCommand):
         self.desired_angle = degrees
 
     def initialize(self):
-        print('auto_rotate#initialize, desired: ', self.desired_angle)
-        self.robot.navx.reset()
         self.robot.navx.reset()
         # self.controller = self.getPIDController()
         self.controller.setInputRange(-180, 180)
